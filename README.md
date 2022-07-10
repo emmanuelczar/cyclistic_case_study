@@ -8,4 +8,4 @@ https://htmlpreview.github.io/?https://github.com/emmanuelczar/cyclistic_case_st
 
 To see my visualizations for this project, click the link below:
 
-https://public.tableau.com/app/profile/emmanuel.czar.pascua
+https://public.tableau.com/app/profile/emmanuel.czar.pascua/viz/CyclisticCaseStudy_16574346505240/Dashboard1
