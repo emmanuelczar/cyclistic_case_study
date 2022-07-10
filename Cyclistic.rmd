@@ -1,0 +1,346 @@
+---
+title: "Cyclistic Data Analysis"
+author: "Emmanuel Pascua"
+date: '2022-07-09'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "D:/FILES/DATA ANALYTICS/PORTFOLIO/CYCLISTIC/DATA")
+
+options(warn=-1)
+```
+
+```{r}
+# Install required packages
+#install.packages("tidyverse")
+#install.packages("lubridate")
+# Load packages
+library(tidyverse)
+library(lubridate)
+
+#Set working directory
+getwd()
+setwd("D:/FILES/DATA ANALYTICS/PORTFOLIO/CYCLISTIC/DATA")
+```
+
+## Cyclistic Bike Service Case Study
+
+About the company
+
+In 2016, Cyclistic launched a successful bike-share offering. Since then, the program has grown to a fleet of 5,824 bicycles that are geotracked and locked into a network of 692 stations across Chicago. The bikes can be unlocked from one station and returned to any other station in the system anytime.
+
+Until now, Cyclistic's marketing strategy relied on building general awareness and appealing to broad consumer segments. One approach that helped make these things possible was the flexibility of its pricing plans: single-ride passes, full-day passes, and annual memberships. Customers who purchase single-ride or full-day passes are referred to as casual riders. Customers who purchase annual memberships are Cyclistic members.
+
+Cyclistic's finance analysts have concluded that annual members are much more profitable than casual riders. Although the pricing flexibility helps Cyclistic attract more customers, Moreno believes that maximizing the number of annual members will be key to future growth. Rather than creating a marketing campaign that targets all-new customers, Moreno believes there is a very good chance to convert casual riders into members. She notes that casual riders are already aware of the Cyclistic program and have chosen Cyclistic for their mobility needs.
+
+Moreno has set a clear goal: Design marketing strategies aimed at converting casual riders into annual members. In order to do that, however, the marketing analyst team needs to better understand how annual members and casual riders differ, why casual riders would buy a membership, and how digital media could affect their marketing tactics. Moreno and her team are interested in analyzing the Cyclistic historical bike trip data to identify trends.
+
+#### Additional Information
+
+Although Cyclistic is a fictional company, it is based on a real company with a real dataset and for that reason, I took the liberty to check on their policies and pricing.
+
+For members, only the first 45 minutes of each ride are included in the membership price. For casual users, Cyclistic allows unlimited number of 3 hour rides over a 24-hour period.
+
+#### Scope of Work
+
++---------------------+-------------------------------------------------------------------------+
+| Stage               | Deliverable                                                             |
++=====================+=========================================================================+
+| Problem Definition  | -   Formulate a clear statement of the business task                    |
+|                     |                                                                         |
+|                     | -   Identify metrics that we can use in accomplishing the business task |
++---------------------+-------------------------------------------------------------------------+
+| Data Preprocessing  | -   Verify data integrity and completeness                              |
+|                     |                                                                         |
+|                     | -   Clean and organize data                                             |
+|                     |                                                                         |
+|                     | -   What variables are available for analysis                           |
++---------------------+-------------------------------------------------------------------------+
+| Data Transformation | -   Check data for errors                                               |
+|                     |                                                                         |
+|                     | -   Transform data to work with it effectively                          |
++---------------------+-------------------------------------------------------------------------+
+| Data Analysis       | -   Aggregate data to compare customer segments                         |
+|                     |                                                                         |
+|                     | -   Perform calculations                                                |
+|                     |                                                                         |
+|                     | -   Visualize data to provide easy-to-understand insights               |
+|                     |                                                                         |
+|                     | -   Identify trends                                                     |
++---------------------+-------------------------------------------------------------------------+
+| Presentation        | -   Make a presentation slide to share with stakeholders                |
+|                     |                                                                         |
+|                     | -   Create a dashboard                                                  |
++---------------------+-------------------------------------------------------------------------+
+| Recommendation      | -   Conclude the study with recommendations                             |
++---------------------+-------------------------------------------------------------------------+
+
+## Problem Definition
+
+Three questions will guide the future marketing program:
+
+1.  How do annual members and casual riders use Cyclistic bikes differently?
+2.  Why would casual riders buy Cyclistic annual memberships?
+3.  How can Cyclistic use digital media to influence casual riders to become members?
+
+To start with defining the problem, we can load the data into this document.
+
+```{r}
+#Import Data
+m1_2021 <- read_csv("202101-divvy-tripdata.csv", show_col_types = FALSE)
+m2_2021 <- read_csv("202102-divvy-tripdata.csv", show_col_types = FALSE)
+m3_2021 <- read_csv("202103-divvy-tripdata.csv", show_col_types = FALSE)
+m4_2021 <- read_csv("202104-divvy-tripdata.csv", show_col_types = FALSE)
+m5_2021 <- read_csv("202105-divvy-tripdata.csv", show_col_types = FALSE)
+m6_2021 <- read_csv("202106-divvy-tripdata.csv", show_col_types = FALSE)
+m7_2021 <- read_csv("202107-divvy-tripdata.csv", show_col_types = FALSE)
+m8_2021 <- read_csv("202108-divvy-tripdata.csv", show_col_types = FALSE)
+m9_2021 <- read_csv("202109-divvy-tripdata.csv", show_col_types = FALSE)
+m10_2021 <- read_csv("202110-divvy-tripdata.csv", show_col_types = FALSE)
+m11_2021 <- read_csv("202111-divvy-tripdata.csv", show_col_types = FALSE)
+m12_2021 <- read_csv("202112-divvy-tripdata.csv", show_col_types = FALSE)
+
+#Check column names consistency
+colnames(m1_2021)
+colnames(m2_2021)
+colnames(m3_2021)
+colnames(m4_2021)
+colnames(m5_2021)
+colnames(m6_2021)
+colnames(m7_2021)
+colnames(m8_2021)
+colnames(m9_2021)
+colnames(m10_2021)
+colnames(m11_2021)
+colnames(m12_2021)
+
+#Join data
+cyc2021 <- bind_rows(m1_2021,m2_2021,m3_2021,m4_2021,m5_2021,m6_2021,m7_2021,m8_2021,m9_2021,m10_2021,m11_2021,m12_2021)
+
+#Drop these immediately to save memory
+rm(m1_2021)
+rm(m2_2021)
+rm(m3_2021)
+rm(m4_2021)
+rm(m5_2021)
+rm(m6_2021)
+rm(m7_2021)
+rm(m8_2021)
+rm(m9_2021)
+rm(m10_2021)
+rm(m11_2021)
+rm(m12_2021)
+
+head(cyc2021)
+```
+
+With this, we can aggregate our data by time, day, month, types of bike available to compare the difference of usage behavior between two customer segments.
+
+Although each data point indicates whether the user is a member or not, it does not include any information about the customer. It will be helpful if there could be something to identify each individual user such as a unique user ID even for casual users such that we can understand user behavior beyond looking the by-trip data.
+
+We need to identify areas and times where and when casual users tend to use the service. With that information, we can customize our digital marketing efforts such that those areas and those times can be incorporated in the campaign. Cyclistic could partner up with social media influencers in promoting the service.
+
+## Data Pre-processing
+
+We can check for missing values by running the code below
+
+```{r}
+na_count <-sapply(cyc2021, function(y) sum(length(which(is.na(y))))) %>% 
+  data.frame() %>%
+  mutate(percent_missing = (./(nrow(cyc2021)) * 100)) %>%
+  select(c(2))
+head(na_count)
+tail(na_count)
+```
+
+The result returned a table where it shows count of missing values in our dataset. Only data regarding end stations contain null values. It could be because there are trips where bikes were not returned to proper docking stations.
+
+## Data Transformation
+
+We can begin transforming our data so we can work with it effectively during analysis. We begin by converting the contents of the "started_at" column and storing them in new columns. We can also extract the "hour" so we can use it later.
+
+```{r}
+#make new columns from existing columns
+cyc2021$date <- as.Date(cyc2021$started_at)
+cyc2021$month <- format(cyc2021$date, "%m")
+cyc2021$day <- format(cyc2021$date, "%d")
+cyc2021$year <- format(cyc2021$date, "%Y")
+cyc2021$day_of_week <- format(cyc2021$date, "%A")
+
+cyc2021$start_time <- format(cyc2021$started_at, "%H:%M")
+cyc2021$start_hour <- format(cyc2021$started_at, "%H")
+head(cyc2021)
+```
+
+For this next transformation step, I created a new column that shows the total ride length per trip.
+
+We can also check the values by the summary function.
+
+```{r}
+cyc2021$ride_length <- (as.numeric(difftime(cyc2021$ended_at, cyc2021$started_at, unit="secs")) / 60)
+is.numeric(cyc2021$ride_length)
+#quickly check the ride_length 
+summary(cyc2021$ride_length)
+```
+
+There appears to be a negative value in our ride length. According to the project guide, there are data entries representing the times when bikes were taken to HQ for maintenance so we need to drop those data to ensure integrity.
+
+```{r}
+cyc2021 <- cyc2021[!(cyc2021$ride_length < 0 | cyc2021$start_station_name == "HQ QR"),] # drop rows by the condition
+cyc2021 <- cyc2021[rowSums(is.na(cyc2021)) != ncol(cyc2021), ] # drop missing rows
+```
+
+#### Bike-use overtime
+
+The max ride length indicates 55944.150 minutes. This is equivalent 38.85 days. In this case, the user would have been fined a certain amount
+
+According to Divvy's policy, a member has 45 minutes of free rides included in the membership price and day pass holders ("casual") are allowed to have unlimited number of 3 hour rides over a 24-hour period without incurring additional charges so I would like to have a subset of the data where trips exceeded the allowed time. I want access to this data so we can check if we can find trends on the places and times where the time limits are exceeded.
+
+```{r}
+# Create dataframe for members where ride exceeded 45 minutes
+cyc2021_ex_mem <- cyc2021[(cyc2021$ride_length > 45 & cyc2021$member_casual == "member"),]
+cyc2021_ex_mem$ex_minutes <- as.double(cyc2021_ex_mem$ride_length) -  45
+cyc2021_ex_mem <- cyc2021_ex_mem[rowSums(is.na(cyc2021_ex_mem)) != ncol(cyc2021_ex_mem), ]
+
+# Create dataframe for casual users where ride exceeded 3 hours
+cyc2021_ex_cas <- cyc2021[(cyc2021$ride_length > 180 & cyc2021$member_casual == "casual"),]
+cyc2021_ex_cas$ex_minutes <- as.double(cyc2021_ex_cas$ride_length) -  180
+cyc2021_ex_cas<- cyc2021_ex_cas[rowSums(is.na(cyc2021_ex_cas)) != ncol(cyc2021_ex_cas), ]
+
+cyc2021_ex <- bind_rows(cyc2021_ex_cas, cyc2021_ex_mem)# Join
+head(cyc2021_ex)
+```
+
+#### Ride Length Casual vs Member
+
+In the previous steps, we created a new column to compute the length of trips. Let's quickly look at the values with additional aggregation by user type.
+
+```{r}
+aggregate(cyc2021$ride_length ~ cyc2021$member_casual, FUN = mean)
+aggregate(cyc2021$ride_length ~ cyc2021$member_casual, FUN = median)
+aggregate(cyc2021$ride_length ~ cyc2021$member_casual, FUN = min)
+aggregate(cyc2021$ride_length ~ cyc2021$member_casual, FUN = max)
+```
+
+Let us add another variable to our aggregation.
+
+```{r}
+aggregate(cyc2021$ride_length ~ cyc2021$member_casual + cyc2021$day_of_week, FUN = mean) 
+```
+
+The code returned a table showing aggregated data showing the days of the week but we can see that it follows no logical order. Let's fix it by setting the levels of the "day of week" column by running the code below.
+
+```{r}
+cyc2021$day_of_week <- ordered(cyc2021$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+cyc2021_ex$day_of_week <- ordered(cyc2021_ex$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+## Analyze
+
+In this phase of the case study, we will use ggplot2 to create quick visualizations to check trends in our data.
+
+```{r}
+#Number of rides per hour 
+cyc2021 %>% 
+  group_by(member_casual, start_hour) %>%  #groups by usertype and time of use
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, start_hour) %>% 
+  ggplot(aes(x=start_hour, y=number_of_rides, fill=member_casual)) + geom_col(position="dodge") + labs(title = "Average Rides per Hour")
+
+
+#Number of rides per weekday 
+cyc2021 %>% 
+  mutate(day_of_week = wday(started_at, label = TRUE)) %>%  #creates weekday field using wday()
+  group_by(member_casual, day_of_week ) %>%  #groups by usertype and weekday
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, day_of_week) %>% 
+  ggplot(aes(x=day_of_week, y=number_of_rides, fill=member_casual)) + geom_col(position="dodge") + labs(title = "Average Rides per Weekday")
+# The graph shows that more members tend to use the service more during the middle of the week which is the reverse opposite of the
+# casual users behavior.
+
+
+#Average ride length per weekday
+cyc2021 %>% 
+  mutate(day_of_week = wday(started_at, label = TRUE)) %>%  #creates weekday field using wday()
+  group_by(member_casual, day_of_week ) %>%  #groups by usertype and weekday
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, day_of_week) %>% 
+  ggplot(aes(x=day_of_week, y=average_duration, fill=member_casual)) + geom_col(position="dodge") + labs(title = "Average Duration per Weekday")
+#The graph shows that members maintain a fairly consistent ride_length throughout the week whil casual users tend to use the
+# service more on the weekends
+
+#Average number of rides per month
+cyc2021 %>% 
+  mutate(month = month(started_at, label = TRUE)) %>%  #creates weekday field using month()
+  group_by(member_casual, month) %>%  #groups by usertype and month
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, month) %>% 
+  ggplot(aes(x=month, y=number_of_rides, fill=member_casual)) + geom_col(position="dodge") + labs(title = "Average Rides per Month")
+#The graph suggests that the number of rides increase significantly towards the middle of the year with July as its peak.
+
+#Average ride length per month
+cyc2021 %>% 
+  mutate(month = month(started_at, label = TRUE)) %>%  #creates weekday field using month()
+  group_by(member_casual, month) %>%  #groups by usertype and month
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, month) %>% 
+  ggplot(aes(x=month, y=average_duration, fill=member_casual)) + geom_col(position="dodge") + labs(title = "Average Duration per Month")
+
+#Distribution of rideable bike types
+ggplot(cyc2021, mapping = aes(x = rideable_type)) + geom_bar() + labs(title = "bike type distribution")
+
+```
+
+**Average rides per hour**
+
+Member's bike usage peaks during rush hours that may indicate using it to commute for work and school
+
+**Average rides per weekday**
+
+The graph shows that more members tend to use the service more during the middle of the week which is the reverse opposite of the casual users behavior.
+
+**Average ride length per weekday**
+
+The graph shows that members maintain a fairly consistent ride length throughout the week while casual users tend to use the service more on the weekends.
+
+**Average number of rides per month**
+
+The graph suggests that the number of rides increase significantly towards the middle of the year with July as its peak.
+
+**Average ride length per month**
+
+Casual : The graph suggests that the average ride length increase significantly towards the summer months while members maintain a fairly consistent ride length.
+
+**Geo-location**
+
+The data has geo-locations on the start and end stations. This will be useful in mapping out popular areas where casual and members use the service.
+
+## Presentation
+
+A presentation slide with all the gained insights with data visualizations from this analysis will be available for reading on the same folder of my github repo. To access the dashboard for this analysis, please click the link below.
+
+Tableau Link: <https://public.tableau.com/app/profile/emmanuel.czar.pascua/viz/CyclisticCaseStudy_16574346505240/Dashboard1>
+
+## Recommendations
+
+**Findings:**
+
+1.  Casual users and members alike tend to exceed the time limit on the allowable bike usage per policy.
+
+2.  Casual users tend to use the service for weekend leisures.
+
+3.  Member users use the service for a consistent duration throughout the week and year.
+
+4.  Number of rides is directly proportional to the temperature records of Chicago for 2021.
+
+**Recommendations:**
+
+1.  To convert casual users to annual members, The company can incentivize continuous patronage for day pass holders to acquire a membership for a discounted cost upon accumulating certain points.
+
+2.  The company can also provide a scheme which takes advantage of their behavior to use the service more on the weekends to launch weekend challenges where users are encouraged to bike through certain locations to earn points for a free membership trial that may last for only a couple of months to get through the first hurdle of converting casual users to members.
+
+    This free membership can be designed so that the company can retain these customers. It can be accomplished by offering lower renewal fees. This will ultimately need to be reviewed by financial analysts of the company.
+
+3.  Using the geo-location available, we can map-out locations and use that data to incorporate on our social media campaigns. The company can also partner up with local fitness advocates on social media platforms to introduce the above mentioned weekly challenges to more people.
